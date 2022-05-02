@@ -24,14 +24,31 @@ with open(filename, 'rb') as jpg:
 	if jpgdata[6:10] != b'JFIF':
 		print("File %s isn't a jpeg image" % filename)
 
-	w = struct.unpack('>h', jpgdata[0xa5:0xa7])[0]
-	h = struct.unpack('>h', jpgdata[0xa3:0xa5])[0]
+	#https://stackoverflow.com/questions/8032642/how-to-obtain-image-size-using-standard-python-class-without-using-external-lib
+	size = 2
+	ftype = 0
+	pos = 0
+	while not 0xc0 <= ftype <= 0xcf:
+		pos += size
+		byte = jpgdata[pos]
+		#print ("%02x - %02x" % (byte,pos))
+		pos+=1
+		while byte == 0xff:
+			byte = jpgdata[pos]
+			pos+=1
+			#print ("increment", pos, byte)
+		ftype = byte
+		size = struct.unpack('>H', jpgdata[pos:pos+2])[0] - 2
+		pos+=2
+	# We are at a SOFn block
+	pos+=1 # Skip `precision' byte.
+	h, w = struct.unpack('>HH', jpgdata[pos:pos+4])
 	
 	if "%dx%d" % (w,h) not in ["1920x1080", "1280x720"]:
 		print("Format %dx%d not supported by hisi soc" % (w,h))
 		sys.exit(1)	
 
-	logo = open(os.path.splitext(filename)[0] + '.img2', 'wb')
+	logo = open(os.path.splitext(filename)[0] + '.img', 'wb')
 
 	logo.write(HISI_HEADER)
 	logo.write(b'\x00\x7c\x00\x00\x00')
