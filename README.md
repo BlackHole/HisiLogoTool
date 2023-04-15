@@ -17,3 +17,5 @@ hisi2jpeg.py logo.img
 
 - To convert your own jpeg logo to hisi format:  
 jpeg2hisi.py logo.jpg
+
+the jpeg needs to use 4:2:0 chroma subsampling to be managed by the Hisi soc (#2)
